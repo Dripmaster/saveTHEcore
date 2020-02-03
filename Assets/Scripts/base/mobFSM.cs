@@ -22,8 +22,18 @@ public class mobFSM : FSMbase
     Direction mobDir;
     Vector2 moveDir;
     public Transform[] targetVector;
-    int currentTarget=1;
-    public float mobSpeed;
+    int currentTarget = 1;
+    /// monster status
+    string mobNAME;
+    int level = 1;
+    float mobSpeed = 3;
+    float nowMobSpeed;
+    float def = 1;
+    float nowDef;
+    float maxHP = 100;
+    float nowHP;
+    /// monster status
+
 
     public void Awake()
     {
@@ -31,6 +41,8 @@ public class mobFSM : FSMbase
         mobDir = Direction.DOWN;
         setState(State.WALK);
         setDir(mobDir);
+
+        loadStat();
     }
     public void Update()
     {
@@ -44,11 +56,25 @@ public class mobFSM : FSMbase
         _anim.SetInteger("Dir", (int)mobDir);
 
     }
+    void loadStat() {// mobname을 이용해 몹 스탯 로딩(엑셀)
+        //로딩
+
+        nowHP = maxHP;
+        nowMobSpeed = mobSpeed;
+        nowDef = def;
+    }
+    public void dealDamage(float d) {
+        nowHP -= d*(1-(nowDef/100));
+        if (nowHP <= 0) {
+            nowHP = 0;
+            //몹 죽고 실행될 코드
+        }
+    }
     public void setDir(Direction d)
     {
         mobDir = d;
         _anim.SetInteger("Dir", (int)mobDir);
-        _anim.speed = mobSpeed;
+        _anim.speed = nowMobSpeed;
     }
     IEnumerator FSMmain()
     {
@@ -78,7 +104,7 @@ public class mobFSM : FSMbase
         {
             yield return null;
             Vector2 targetPos = targetVector[currentTarget].position;
-            transform.position = Vector2.MoveTowards(transform.position, targetPos, Time.deltaTime*mobSpeed);
+            transform.position = Vector2.MoveTowards(transform.position, targetPos, Time.deltaTime* nowMobSpeed);
             
             if (Vector2.Distance(transform.position, targetPos) < 0.01f)
             {
