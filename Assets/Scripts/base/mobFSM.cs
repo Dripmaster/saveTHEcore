@@ -10,6 +10,7 @@ public class mobFSM : FSMbase
     {
         IDLE = 0,
         WALK,
+        DIE,
     };
     public enum Direction
     {
@@ -38,11 +39,12 @@ public class mobFSM : FSMbase
     public void Awake()
     {
         base.Awake();
+        loadStat();
         mobDir = Direction.DOWN;
         setState(State.WALK);
         setDir(mobDir);
-
-        loadStat();
+        Debug.Log("?????????????");
+        
     }
     public void Update()
     {
