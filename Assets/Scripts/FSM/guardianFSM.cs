@@ -18,7 +18,7 @@ public class guardianFSM : FSMbase
     int level = 1;
     float atkPoint = 10;
     float nowAtkPoint;
-    float atkSpeed = 1;
+    float atkSpeed = 5;
     float nowAtkSpeed;
     float maxMana = 10;
     float nowMana;
@@ -28,9 +28,10 @@ public class guardianFSM : FSMbase
     float nowCriChance;
     float criDamage = 200;
     float nowCriDamage;
-    float atkRange = 5;
+    float atkRange = 10;
     /// guardian status
-
+    public GameObject myBullet;
+    public Transform bulletPos;
 
     public void Awake()
     {
@@ -54,7 +55,6 @@ public class guardianFSM : FSMbase
     {// name,레벨을 이용해 가디언 스탯 로딩(엑셀)
         //로딩
 
-
         nowAtkPoint = atkPoint;
         nowAtkSpeed = atkSpeed;
         nowMana = 0;
@@ -63,15 +63,21 @@ public class guardianFSM : FSMbase
         nowCriDamage = criDamage;
         
     }
+    public void attackCommand() {
+        attackManager.guardianAttackParameter gap = new attackManager.guardianAttackParameter(0,nowAtkPoint,nowDefCut,nowCriChance,nowCriDamage);
+
+        attackManager.attack(gap,targetMob);
+
+    }
     void detectEnemy() {
         GameObject[] allMonster = GameObject.FindGameObjectsWithTag("Monster");
         foreach (GameObject g in allMonster) {
             if (Vector2.Distance(g.transform.position, transform.position) <= atkRange) {
                 targetMob = g.GetComponent<mobFSM>();
+                if (targetMob.isDie)
+                    continue;
             }
-
         }
-
     }
 
     IEnumerator FSMmain()
@@ -85,8 +91,6 @@ public class guardianFSM : FSMbase
     }
     IEnumerator IDLE()
     {
-
-
         do
         {
             yield return null;
@@ -94,21 +98,24 @@ public class guardianFSM : FSMbase
             if (targetMob != null) {
                 setState(State.ATTACK);
             }
-
-
         } while (!newState);
     }
     IEnumerator ATTACK()
     {
         do
         {
-            yield return null;
+            if (targetMob == null||targetMob.isDie) {
+                setState(State.IDLE);
+                break;
+            }
+            
             if (Vector2.Distance(targetMob.transform.position, transform.position) > atkRange)
-            {
+            {//사거리 넘어감
                 targetMob = null;
                 setState(State.IDLE);
             }
             else {
+                //방향전환
                 if (transform.localScale.x==-1&&targetMob.transform.position.x > transform.position.x)
                 {
                     transform.localScale = new Vector3(1, 1, 1);
@@ -116,8 +123,10 @@ public class guardianFSM : FSMbase
                 else if(transform.localScale.x == 1 && targetMob.transform.position.x < transform.position.x) {
                     transform.localScale = new Vector3(-1, 1, 1);
                 }
-
-
+                //공격(발사체 발사 방식)
+                GameObject g = Instantiate(myBullet, bulletPos.position, Quaternion.identity);
+                g.GetComponent<bulletScript>().bulletInit(targetMob.transform,this);
+                yield return new WaitForSeconds(1 / atkSpeed);
             }
         } while (!newState);
     }

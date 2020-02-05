@@ -22,28 +22,33 @@ public class mobFSM : FSMbase
     State mobState;
     Direction mobDir;
     Vector2 moveDir;
-    public Transform[] targetVector;
+    Transform[] targetVector;
     int currentTarget = 1;
     /// monster status
     string mobNAME;
     int level = 1;
-    float mobSpeed = 3;
+    float mobSpeed = 5;
     float nowMobSpeed;
     float def = 1;
     float nowDef;
-    float maxHP = 100;
+    float maxHP = 1000;
     float nowHP;
     /// monster status
-
+    public bool isDie;
 
     public void Awake()
     {
         base.Awake();
+        targetVector = new Transform[4];
+        targetVector[0] = GameObject.Find("left-up").transform;
+        targetVector[1] = GameObject.Find("left-down").transform;
+        targetVector[2] = GameObject.Find("right-down").transform;
+        targetVector[3] = GameObject.Find("right-up").transform;
         loadStat();
         mobDir = Direction.DOWN;
         setState(State.WALK);
         setDir(mobDir);
-        Debug.Log("?????????????");
+        isDie = false;
         
     }
     public void Update()
@@ -65,11 +70,15 @@ public class mobFSM : FSMbase
         nowMobSpeed = mobSpeed;
         nowDef = def;
     }
-    public void dealDamage(float d) {
-        nowHP -= d*(1-(nowDef/100));
+    public void dealDamage(float d, float defCut) {
+        nowHP -= d*(1-(nowDef-defCut/100));
         if (nowHP <= 0) {
             nowHP = 0;
             //몹 죽고 실행될 코드
+            isDie = true;
+            GetComponent<SpriteRenderer>().color = Color.red;
+            GetComponent<SpriteRenderer>().sortingOrder = -1;
+            _anim.speed = 0;
         }
     }
     public void setDir(Direction d)
@@ -105,6 +114,10 @@ public class mobFSM : FSMbase
         do
         {
             yield return null;
+            if (isDie) {
+                continue; //임시
+
+            }
             Vector2 targetPos = targetVector[currentTarget].position;
             transform.position = Vector2.MoveTowards(transform.position, targetPos, Time.deltaTime* nowMobSpeed);
             
