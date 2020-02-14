@@ -31,7 +31,6 @@ public class bulletScript : MonoBehaviour
         if (targetPos == null || other == null)
             return;
         if (GameObject.ReferenceEquals(targetPos.gameObject, other.gameObject)) {
-            Debug.Log("col2");
             gFSM.attackCommand();
             Destroy(gameObject);
         }

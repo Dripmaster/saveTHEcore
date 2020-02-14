@@ -28,17 +28,24 @@ public class guardianFSM : FSMbase
     float nowCriChance;
     float criDamage = 200;
     float nowCriDamage;
-    float atkRange = 10;
+    float atkRange = 5;
+    float manaGain = 1;
+    float nowManaGain;
+    int atkType = 0;
     /// guardian status
     public GameObject myBullet;
     public Transform bulletPos;
-
+    bool is_selected;
+    GameObject rangeView;
     public void Awake()
     {
         base.Awake();
         setState(State.IDLE);
-
+        
         loadStat();
+        is_selected = false;
+        rangeView = transform.FindChild("range").gameObject;
+        rangeView.SetActive(false);
     }
     public void Update()
     {
@@ -61,10 +68,18 @@ public class guardianFSM : FSMbase
         nowDefCut = defCut;
         nowCriChance = criChance;
         nowCriDamage = criDamage;
+        nowManaGain = manaGain;
         
     }
+    public void selected(bool s) {
+        is_selected = s;
+        if (is_selected) {
+            rangeView.SetActive(true);
+            rangeView.transform.localScale = new Vector2(atkRange * 3.2f, atkRange * 3.2f);
+        }
+    }
     public void attackCommand() {
-        attackManager.guardianAttackParameter gap = new attackManager.guardianAttackParameter(0,nowAtkPoint,nowDefCut,nowCriChance,nowCriDamage);
+        attackManager.guardianAttackParameter gap = new attackManager.guardianAttackParameter(atkType,nowAtkPoint,nowDefCut,nowCriChance,nowCriDamage);
 
         attackManager.attack(gap,targetMob);
 
@@ -123,11 +138,29 @@ public class guardianFSM : FSMbase
                 else if(transform.localScale.x == 1 && targetMob.transform.position.x < transform.position.x) {
                     transform.localScale = new Vector3(-1, 1, 1);
                 }
-                //공격(발사체 발사 방식)
-                GameObject g = Instantiate(myBullet, bulletPos.position, Quaternion.identity);
-                g.GetComponent<bulletScript>().bulletInit(targetMob.transform,this);
-                yield return new WaitForSeconds(1 / atkSpeed);
+                //공격
+                doAttack();
+                yield return new WaitForSeconds(1 / nowAtkSpeed);
             }
         } while (!newState);
     }
+    void doAttack() {//기본공격
+        switch (atkType) {
+            case 0:shoot(1); break;
+
+        }
+    }
+    void gainMana() {
+        nowMana += manaGain;
+        if (nowMana >= maxMana)
+        {
+            nowMana = maxMana;
+        }
+    }
+    void shoot(int n) {//발사체 발사 방식 공격
+        GameObject g = Instantiate(myBullet, bulletPos.position, Quaternion.identity);
+        g.GetComponent<bulletScript>().bulletInit(targetMob.transform, this);
+       
+    }
+ 
 }

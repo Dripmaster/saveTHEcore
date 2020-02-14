@@ -28,6 +28,5 @@ public class mobSpawn : MonoBehaviour
             yield return new WaitForSeconds(1 / spawnRate);
 
         } while (!endSpawn);
-        
     }
 }

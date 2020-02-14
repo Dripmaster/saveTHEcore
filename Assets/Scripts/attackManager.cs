@@ -57,8 +57,10 @@ public class attackManager : MonoBehaviour
     }
 
     static void defaultAttack(guardianAttackParameter gap, mobFSM target) {
-        float criDamage = Random.Range(1f, 100f) <= gap.criChance ? gap.criDamage : 1;
+        float criDamage = Random.Range(1f, 100f) <= gap.criChance ? gap.criDamage : 100f;
         if(target!=null)
-        target.dealDamage(gap.atkPoint * criDamage, gap.defCut);
+        target.dealDamage(gap.atkPoint * criDamage/100f, gap.defCut);
     }
+
+
 }
